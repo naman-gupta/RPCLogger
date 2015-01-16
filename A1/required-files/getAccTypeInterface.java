@@ -55,7 +55,7 @@ public class getAccTypeInterface extends getAccTypeServerStub {
     }
     
    public int GET_BALANCE_1(acc_id_num arg1){
-    System.out.println("Processing request for "+ arg1.value );
+    System.out.println("Processing request for Get Balance for Account Id :"+ arg1.value );
 	BufferedReader in=null;
 	try{
 		in = new BufferedReader(new FileReader(datafilename));
@@ -63,9 +63,7 @@ public class getAccTypeInterface extends getAccTypeServerStub {
 		String line =null;
 		while((line=in.readLine())!=null){
 		     	StringTokenizer st = new StringTokenizer(line);
-			// data file must have all 5 data fields
 			if (st.countTokens()==3){
-			// check the id to see if equal
 				if(st.nextToken().equals(arg1.value)){
                     String accountType= st.nextToken();
                     int bal = Integer.parseInt(st.nextToken());
@@ -74,19 +72,23 @@ public class getAccTypeInterface extends getAccTypeServerStub {
 			}
 		}
 		// if fall through then return error
-		return 0;
+		return -1;
 	}
 	catch (Exception e){
-            System.out.println("error Processing request for "+ arg1.value );
+            System.out.println("Error Processing GET_BALANCE request for "+ arg1.value );
 	}
-        return 0;
+        return -1;
     }
 
-    public BALANCE SET_BALANCE_1(acc_id_num arg1,int x){
-    System.out.println("Processing request for "+ arg1.value );
+    //Operation 2 : add 'x' to the existing balance associated with arg1
+
+    public BALANCE SET_BALANCE_1(acc_id_num arg1,int x)
+    {
+    System.out.println("Processing Set Balance Request for Account Id :"+ arg1.value );
     BALANCE balance = null;
 	BufferedReader in=null;
     StringBuffer sb = new StringBuffer("");
+    boolean flag =false;
 	try{
 		in = new BufferedReader(new FileReader(datafilename));
 		//read file
@@ -105,6 +107,7 @@ public class getAccTypeInterface extends getAccTypeServerStub {
                     bal=bal+x;
                     balance.newBalance = bal;
                     sb.append(arg1.value+" "+accountType+" "+bal+"\n");
+                    flag=true;
 				}else
                 {
                     sb.append(line);
@@ -112,24 +115,31 @@ public class getAccTypeInterface extends getAccTypeServerStub {
                 }
 			}
 		}
+
         in.close();     
 		// if fall through then return error
         BufferedWriter out = new BufferedWriter(new FileWriter(datafilename));
-        System.out.println(sb.toString());
         out.write(sb.toString());
         out.flush();
         out.close();
+        if(null==balance)
+        {
+            balance = new BALANCE();
+            balance.account=arg1;
+            balance.oldBalance = -100;// Returning Negative Amount if Account is not found.
+        }
 		return balance;
+ 
 	}
 	catch (Exception e){
-            System.out.println("error Processing request for "+ arg1.value );
+            System.out.println("Error Processing SET Balance Request for Account Id :"+ arg1.value );
 	}
         return null;
     }
 
 
     public TRANS TRANSACTION_1(acc_id_num arg1,acc_id_num arg2,int x){
-    System.out.println("Processing request for "+ arg1.value+ arg2.value );
+    System.out.println("Processing Transfer request from "+ arg1.value+" to " + arg2.value +" of Amount " + x );
 	
     BufferedReader in=null;
     
@@ -139,7 +149,6 @@ public class getAccTypeInterface extends getAccTypeServerStub {
 		in = new BufferedReader(new FileReader(datafilename));
 		
         String line =null;
-		
         TRANS t= null;
         int oldBal1=-1,oldBal2=-1,newBal1,newBal2;
         String accType1="",accType2="";
@@ -190,6 +199,7 @@ public class getAccTypeInterface extends getAccTypeServerStub {
                      balance[0]= sender;
                      balance[1]= receiver;
 
+                     System.out.println("ASDASDA");
                      t =  new TRANS(balance); 
                      //t.value[0]= sender;
                      //t.value[1]= receiver;
@@ -207,7 +217,6 @@ public class getAccTypeInterface extends getAccTypeServerStub {
 	    }
         
         in.close();     
-		// if fall through then return error
         BufferedWriter out = new BufferedWriter(new FileWriter(datafilename));
         System.out.println(sb.toString());
         out.write(sb.toString());
@@ -217,6 +226,7 @@ public class getAccTypeInterface extends getAccTypeServerStub {
         {
             updateTransactionHistory(arg1.value, arg2.value, x);
         }
+        
         return t;
 
     }
@@ -242,24 +252,48 @@ public class getAccTypeInterface extends getAccTypeServerStub {
         }
     }
 
-    public HISTORY GET_TRANSACTION_1(acc_id_num arg1){
+   public HISTORY GET_TRANSACTION_1(acc_id_num arg1){
     System.out.println("Processing request for "+ arg1.value );
 	BufferedReader in=null;
 	try{
 		in = new BufferedReader(new FileReader(historyFileName));
 		String line =null;
+        HISTORY start = null;
+        HISTORY end = null;
 		while((line=in.readLine())!=null)
         {
 		    String st[]= line.split(" "); 
-            HISTORY history = new HISTORY();
-            history.next=null;
             if(st[0].equals(arg1.value))
             {
-                history.receiver = st[1];
-                history.transfer_amount=  Integer.parseInt(st[2]);
+                HISTORY data= new HISTORY();
+                acc_id_num rec= new acc_id_num();
+                rec.value= st[1];
+
+                data.receiver = rec;
+                data.transfer_amount=  Integer.parseInt(st[2]);
+                data.next=null;
+                if(start==null)
+                {
+                    start=data;
+                    end=data;
+                }else
+                {
+                    end.next=data;
+                    end=data;    
+                }
             }
 
 		}
+        in.close();
+        if(null==start)
+        {
+            System.out.println("Hello");
+            start= new HISTORY();
+            start.transfer_amount=-100;
+            start.receiver=arg1;
+            start.next=null;
+        }
+        return start;
 	}
 	catch (Exception e){
             System.out.println("error Processing request for "+ arg1.value );
