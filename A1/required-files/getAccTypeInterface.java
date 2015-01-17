@@ -133,8 +133,11 @@ public class getAccTypeInterface extends getAccTypeServerStub {
 	}
 	catch (Exception e){
             System.out.println("Error Processing SET Balance Request for Account Id :"+ arg1.value );
+            balance = new BALANCE();
+            balance.account=arg1;
+            balance.oldBalance = -100;// Returning Negative Amount if Account is not found.
+            return balance;
 	}
-        return null;
     }
 
 
@@ -199,7 +202,6 @@ public class getAccTypeInterface extends getAccTypeServerStub {
                      balance[0]= sender;
                      balance[1]= receiver;
 
-                     System.out.println("ASDASDA");
                      t =  new TRANS(balance); 
                      //t.value[0]= sender;
                      //t.value[1]= receiver;
@@ -216,27 +218,44 @@ public class getAccTypeInterface extends getAccTypeServerStub {
 
 	    }
         
-        in.close();     
+        in.close();    
+
+        if(null==t)//Either of the Account data is not available
+        {
+           BALANCE dummy1 = new BALANCE();
+           dummy1.account = arg1;
+           dummy1.newBalance = -1;
+           
+           BALANCE dummy2 = new BALANCE();
+           dummy2.account=arg2;
+           dummy2.newBalance = -1;
+
+           BALANCE[] dummy_bal = new BALANCE[2];
+           dummy_bal[0]=dummy1;
+           dummy_bal[1]=dummy2;
+           t= new TRANS(dummy_bal);
+           return t;
+           
+        } 
         BufferedWriter out = new BufferedWriter(new FileWriter(datafilename));
-        System.out.println(sb.toString());
         out.write(sb.toString());
         out.flush();
         out.close();
         if(t.value[0].oldBalance!=t.value[0].newBalance)
         {
-            updateTransactionHistory(arg1.value, arg2.value, x);
+            logTransactionHistory(arg1.value, arg2.value, x);
         }
         
         return t;
 
     }
 	catch (Exception e){
-            System.out.println("error Processing request for "+ arg1.value );
+            System.out.println("Error Processing request for "+ arg1.value );
 	}
         return null;
     }
 
-    public void updateTransactionHistory(String sender, String rec, int amount)
+    public void logTransactionHistory(String sender, String rec, int amount)
     {
         try
         {
@@ -287,7 +306,6 @@ public class getAccTypeInterface extends getAccTypeServerStub {
         in.close();
         if(null==start)
         {
-            System.out.println("Hello");
             start= new HISTORY();
             start.transfer_amount=-100;
             start.receiver=arg1;
@@ -297,8 +315,13 @@ public class getAccTypeInterface extends getAccTypeServerStub {
 	}
 	catch (Exception e){
             System.out.println("error Processing request for "+ arg1.value );
-	}
-        return null;
+            HISTORY start = new HISTORY();
+            start= new HISTORY();
+            start.transfer_amount=-100;
+            start.receiver=arg1;
+            start.next=null;
+            return start;
+        }
     }
 
     public static void main(String [] args) {

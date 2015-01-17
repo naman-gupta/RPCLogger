@@ -59,16 +59,15 @@ public class Bank {
 
         String operation = args[1];
 
-        if(operation.equals("GET_BALANCE"))
+        if(operation.equals("GET_BALANCE"))//Operation 1: return the balance associated with acc_id
         {
             acc_id_num arg1 =new acc_id_num ();
 
 	        arg1.value=args[2];
             try 
             {
-            
-                int res= client.GET_BALANCE_1(arg1);
-                if(res!=1)
+                int res= client.GET_BALANCE_1(arg1);//res=-1 if entry corresponding to acc_id is not found.
+                if(res!=-1)
                 {
                     BufferedWriter bw = new BufferedWriter(new FileWriter(OUTPUT_FILE_NAME, true));
                     System.out.println("Result is:"+ arg1.value+ " "+ res);
@@ -84,7 +83,7 @@ public class Bank {
             } 
             catch ( Exception e ) 
             {
-	            System.out.println("Error contacting server");
+	            System.out.println("Error Contacting server");
                 e.printStackTrace(System.out);
                 return;
             }
@@ -99,7 +98,7 @@ public class Bank {
             try 
             {
                 BALANCE res= client.SET_BALANCE_1(arg1,x);
-                if(null!=res && res.oldBalance >=0)
+                if(null!=res && res.oldBalance >=0)//res.oldBalance is set to -ve if account is not found.
                 {
             
                     System.out.println("Result is:"+ res.account.value+ " "+ res.oldBalance+ " "+res.newBalance);
@@ -135,7 +134,7 @@ public class Bank {
             TRANS res= client.TRANSACTION_1(arg1,arg2,x);
             
             BufferedWriter bw = new BufferedWriter(new FileWriter(OUTPUT_FILE_NAME, true));
-            if(res!=null)
+            if(null!=res && res.value[0].newBalance !=-1) //Either of the record Data was not found
             {
                 System.out.println("Result is:"+ res.value[0].account.value+ " "+ res.value[0].oldBalance+ " "+res.value[1].account.value+ " "+res.value[1].oldBalance);
                 System.out.println("Result is:"+ res.value[0].account.value+ " "+ res.value[0].newBalance+ " "+res.value[1].account.value+ " "+res.value[1].newBalance);
@@ -146,8 +145,11 @@ public class Bank {
                 bw.newLine();
                 bw.flush();
                 bw.close();
-            }
+            }else
+            {
+                System.out.println("Error Either of the account was not available");
             
+            }
             } 
             catch ( Exception e ) {
 	        System.out.println("Error contacting server");
@@ -156,7 +158,7 @@ public class Bank {
             }
 
 
-        }else if (operation.equals("GET_TRANSACTION_HISTORY"))
+        }else if (operation.equals("GET_TRANSACTION_HISTORY"))//Return all transaction history associated with acc_id.
         {
             acc_id_num arg1 =new acc_id_num ();
 
@@ -166,7 +168,7 @@ public class Bank {
                 HISTORY res= client.GET_TRANSACTION_1(arg1);
             
                 BufferedWriter bw = new BufferedWriter(new FileWriter(OUTPUT_FILE_NAME, true));
-                if(res.transfer_amount>=0)
+                if(res.transfer_amount>=0) //res.transfer_amount set to -ve if no record is found.
                 {
   
                   while(res!=null)
@@ -178,6 +180,9 @@ public class Bank {
                         bw.flush();
                         res=res.next;
                     }
+                }else
+                {
+                    System.out.println("No Record Found");
                 }
             
            
