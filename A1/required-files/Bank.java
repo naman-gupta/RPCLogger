@@ -15,12 +15,16 @@ public class Bank {
         if (args.length <2) {
 	        System.out.println("usage: infoline host_name stu num ");
             System.exit(1);
-        }else if(!args[1].equals("GET_BALANCE") && !args[1].equals("SET_BALANCE") && !args[1].equals("TRANSACTION") && !args[1].equals("GET_TRANSACTION_HISTORY"))
+        }else if(!args[1].equals("GET_ACCOUNT_TYPE") && !args[1].equals("GET_BALANCE") && !args[1].equals("SET_BALANCE") && !args[1].equals("TRANSACTION") && !args[1].equals("GET_TRANSACTION_HISTORY"))
         {
-            System.out.println("Invalid Operation : usage IP_ADDR GET_BALANCE|SET_BALANCE|TRANSACTION|GET_TRANSACTION_HISTORY");
+            System.out.println("Invalid Operation : usage IP_ADDR GET_ACCOUNT_TYPE|GET_BALANCE|SET_BALANCE|TRANSACTION|GET_TRANSACTION_HISTORY");
             System.exit(1);
         }
-        else if(args[1].equals("GET_BALANCE") && args.length!=3)
+        else if(args[1].equals("GET_ACCOUNT_TYPE") && args.length!=3)
+        {
+            System.out.println("Usage : IP_Addr GET_ACCOUNT_TYPE acc_id");
+            System.exit(1);
+        }else if(args[1].equals("GET_BALANCE") && args.length!=3)
         {
             System.out.println("Usage : IP_Addr GET_BALANCE acc_id");
             System.exit(1);
@@ -54,12 +58,31 @@ public class Bank {
         }
         client.getClient().setTimeout(300*1000);
 
-        System.out.println("Making request to server");
 
 
         String operation = args[1];
 
-        if(operation.equals("GET_BALANCE"))//Operation 1: return the balance associated with acc_id
+        
+
+        if(operation.equals("GET_ACCOUNT_TYPE"))//Operation 0: Get Account type of the acc_id
+        {
+
+            acc_id_num arg1 =new acc_id_num ();
+            arg1.value=args[2];
+    
+            try 
+            {
+                byte res =client.GET_ACC_TYPE_1(arg1);
+                System.out.println("Result is:"+ (char)res);
+            }    
+            catch ( Exception e ) 
+            {
+	            System.out.println("Error contacting server");
+                e.printStackTrace(System.out);
+                return;
+            }
+        }
+        else if(operation.equals("GET_BALANCE"))//Operation 1: return the balance associated with acc_id
         {
             acc_id_num arg1 =new acc_id_num ();
 
@@ -95,6 +118,11 @@ public class Bank {
 	        arg1.value=args[2];
             int x= Integer.parseInt(args[3]);
             
+            if(x<0)
+            {
+                System.out.println("Invalid Amount");
+                return;
+            }            
             try 
             {
                 BALANCE res= client.SET_BALANCE_1(arg1,x);
@@ -129,6 +157,12 @@ public class Bank {
 	        arg1.value=args[2];
             arg2.value=args[3];
             int x= Integer.parseInt(args[4]);
+            if(x<=0)
+            {
+                System.out.println("Invalid Amount");
+                return;
+            }
+            
             try 
             {
             TRANS res= client.TRANSACTION_1(arg1,arg2,x);

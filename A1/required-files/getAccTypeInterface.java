@@ -29,7 +29,7 @@ public class getAccTypeInterface extends getAccTypeServerStub {
 
 
    public  byte GET_ACC_TYPE_1(acc_id_num arg1){
-        System.out.println("Processing request for "+ arg1.value );
+    System.out.println("Processing request for "+ arg1.value );
 	BufferedReader in=null;
 	try{
 		in = new BufferedReader(new FileReader(datafilename));
@@ -38,7 +38,7 @@ public class getAccTypeInterface extends getAccTypeServerStub {
 		while((line=in.readLine())!=null){
 		     	StringTokenizer st = new StringTokenizer(line);
 			// data file must have all 5 data fields
-			if (st.countTokens()==2){
+			if (st.countTokens()==3){
 			// check the id to see if equal
 				if(st.nextToken().equals(arg1.value)){
 				return  (st.nextToken().getBytes())[0];
