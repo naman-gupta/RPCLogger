@@ -9,18 +9,34 @@ Compile:
 1. Compile Client (Bank.java), Server (getAccTypeInterface.java), and other stun and Skeleton generated in Step 1:
    javac -classpath .:oncrpc.jar *.java
 
-Execution
+
+Run Server
+
+1. java -classpath .:oncrpc.jar getAccTypeServer
+2. if you get RPC portmap failure error then run the following sequence of command
+    2.1 sudo service portmap stop
+    2.2 sudo rpcbind -i -w
+    2.3 sudo service portmap start
+    2.4 java -classpath .:oncrpc.jar getAccTypeInterface
+
+
+Execute commands from client 
+
+IPADDR : Ip Address of the Server Machine
+
 1. GET_BALANCE ::
-   java -classpath .:oncrpc.jar Bank 127.0.0.1 GET_BALANCE acc_id
+   java -classpath .:oncrpc.jar Bank IPADDR GET_BALANCE acc_id
 
 2. SET_BALANCE ::
-   java -classpath .:oncrpc.jar Bank 127.0.0.1 SET_BALANCE acc_id x
+   java -classpath .:oncrpc.jar Bank IPADDR SET_BALANCE acc_id x
 
 3. TRANSACTION ::
-   java -classpath .:oncrpc.jar Bank 127.0.0.1 TRANSACTION src_acc_id dst_acc_id x
+   java -classpath .:oncrpc.jar Bank IPADDR TRANSACTION src_acc_id dst_acc_id x
 
 4. GET_TRANSACTION_HISTORY ::
-   java -classpath .:oncrpc.jar Bank 127.0.0.1 GET_TRANSACTION_HISTORY acc_id
+   java -classpath .:oncrpc.jar Bank IPADDR GET_TRANSACTION_HISTORY acc_id
+
+
 
 
 Note: We have also provided error handling code at various level.
