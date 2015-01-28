@@ -346,10 +346,6 @@ public class jrpcgen {
 		if ( emitImports ) {
 			out.println("import org.acplt.oncrpc.*;");
 			out.println("import java.io.IOException;");
-			//Changed for Logging at Client Side
-			out.println("import java.io.*;");
-			out.println("import java.text.SimpleDateFormat;");
-			out.println("import java.util.Date;");
 			out.println();
 		}
 
@@ -1671,8 +1667,6 @@ public class jrpcgen {
             // Now emit the real ONC/RPC call using the (optionally
             // wrapped) parameter and (optionally wrapped) result.
             //
-            out.println("        long t1 = 0 , t2 = 0;");
-            out.println("        t1 = System.nanoTime();");
             if ( clampProgAndVers ) {
                 out.println("        client.call("
                             + baseClassname + "." + proc.procedureId
@@ -1684,22 +1678,6 @@ public class jrpcgen {
                             + ", client.getVersion(), "
                             + xdrParamsName + ", result$);");
             }
-            out.println("        t2 = System.nanoTime();");
-            out.println("        try");
-            out.println("        {");
-			out.println("                BufferedWriter bw =  new BufferedWriter(new FileWriter(\"log-client.txt\",true));");
-	        out.println("                Date dt = new Date();");
-		    out.println("                SimpleDateFormat ft = new SimpleDateFormat(\"dd.MM.yyyy hh:mm:ss\");");
-		    out.println("                bw.write(ft.format(dt) + \" \" + (t2 - t1) / 1000000);");
-		    out.println("				 bw.newLine();");
-		    out.println("                bw.flush();");
-		    out.println("                bw.close();");
-		    out.println("        }");
-		    out.println("        catch(Exception e)");
-		    out.println("        {");
-		    out.println("                e.printStackTrace();");
-		    out.println("        }");
-		    
             //
             // In case of a wrapped result we need to return the value
             // of the wrapper, otherwise we can return the result
@@ -1951,20 +1929,6 @@ public class jrpcgen {
         //
         // Do generate code for unwrapping here, if necessary.
         //
-        out.println("            try");
-        out.println("            {");
-		out.println("                    BufferedWriter bw =  new BufferedWriter(new FileWriter(\"log-server.txt\",true));");
-        out.println("                    Date dt = new Date();");
-	    out.println("                    SimpleDateFormat ft = new SimpleDateFormat(\"dd.MM.yyyy hh:mm:ss\");");
-	    out.println("                    bw.write(ft.format(dt));");
-	    out.println("                    bw.newLine();");
-	    out.println("                    bw.flush();");
-	    out.println("                    bw.close();");
-	    out.println("            }");
-	    out.println("            catch(Exception e)");
-	    out.println("            {");
-	    out.println("                    e.printStackTrace();");
-	    out.println("            }");
         String params = "";
 
         switch ( paramsKind ) {
@@ -1973,7 +1937,6 @@ public class jrpcgen {
             // Almost nothing to do here -- well, we need to retrieve nothing
             // so the RPC layer can do its book keeping.
             //
-        	
             out.println("                call.retrieveCall(XdrVoid.XDR_VOID);");
             params = withCallInfo ? "call" : "";
             break;
